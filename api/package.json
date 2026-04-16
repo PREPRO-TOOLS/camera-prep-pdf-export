@@ -1,6 +1,7 @@
 {
   "name": "camera-prep-pdf-export",
   "version": "1.0.0",
+  "type": "commonjs",
   "dependencies": {
     "puppeteer-core": "19.6.3",
     "@sparticuz/chromium": "110.0.0"
