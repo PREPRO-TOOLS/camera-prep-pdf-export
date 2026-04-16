@@ -1,4 +1,7 @@
-export default async function handler(req, res) {
+const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer-core');
+
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', 'https://camera-prep-go.base44.app');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,9 +15,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const chromium = require('@sparticuz/chromium');
-    const puppeteer = require('puppeteer-core');
-
     const { html, width, height } = req.body;
 
     if (!html) {
@@ -51,4 +51,4 @@ export default async function handler(req, res) {
     console.error('PDF generation error:', error);
     return res.status(500).json({ error: error.message });
   }
-}
+};
