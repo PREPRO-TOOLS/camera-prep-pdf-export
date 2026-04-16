@@ -2,7 +2,7 @@
   "name": "camera-prep-pdf-export",
   "version": "1.0.0",
   "dependencies": {
-    "puppeteer-core": "^21.0.0",
-    "@sparticuz/chromium": "^119.0.0"
+    "puppeteer-core": "21.6.1",
+    "@sparticuz/chromium": "119.0.2"
   }
 }
