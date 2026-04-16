@@ -1,6 +1,3 @@
-const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', 'https://camera-prep-go.base44.app');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -21,31 +18,32 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'No HTML provided' });
     }
 
-    const executablePath = await chromium.executablePath();
+    const response = await fetch(
+      `https://production-sfo.browserless.io/pdf?token=2ULh6TR70PG4MZBd9ff4f234e5c9be89e01bb5d3751963082`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          html: html,
+          options: {
+            landscape: true,
+            printBackground: true,
+            width: width || 1400,
+            height: height || 900,
+          }
+        })
+      }
+    );
 
-    const browser = await puppeteer.launch({
-      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
-      defaultViewport: { width: width || 1400, height: height || 900 },
-      executablePath: executablePath,
-      headless: chromium.headless,
-    });
+    if (!response.ok) {
+      throw new Error(`Browserless error: ${response.status}`);
+    }
 
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    await page.waitForTimeout(1000);
-
-    const pdf = await page.pdf({
-      width: `${width || 1400}px`,
-      height: `${height || 900}px`,
-      printBackground: true,
-      landscape: true,
-    });
-
-    await browser.close();
+    const pdf = await response.arrayBuffer();
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=camera-plot.pdf');
-    return res.send(pdf);
+    return res.send(Buffer.from(pdf));
 
   } catch (error) {
     console.error('PDF generation error:', error);
