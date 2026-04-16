@@ -22,10 +22,12 @@ export default async function handler(req, res) {
     }
 
     const browser = await puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
       defaultViewport: { width: width || 1400, height: height || 900 },
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      executablePath: await chromium.executablePath(
+        '/var/task/node_modules/@sparticuz/chromium/bin'
+      ),
+      headless: true,
     });
 
     const page = await browser.newPage();
