@@ -1,5 +1,8 @@
 {
   "name": "camera-prep-pdf-export",
   "version": "1.0.0",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "sharp": "^0.33.0"
+  }
 }
