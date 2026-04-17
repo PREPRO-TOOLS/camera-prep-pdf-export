@@ -19,36 +19,38 @@ module.exports = async function handler(req, res) {
     }
 
     const response = await fetch(
-      `https://production-sfo.browserless.io/pdf?token=2ULh6TR70PG4MZBd9ff4f234e5c9be89e01bb5d3751963082`,
+      `https://production-sfo.browserless.io/screenshot?token=2ULh6TR70PG4MZBd9ff4f234e5c9be89e01bb5d3751963082`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           html: html,
           options: {
-            landscape: true,
-            printBackground: true,
-            width: width || 1400,
-            height: height || 900,
-            scale: 2,
-            pageRanges: '1',
+            type: 'png',
+            fullPage: true,
+          },
+          viewport: {
+            width: width || 1920,
+            height: height || 1080,
+            deviceScaleFactor: 2,
           }
         })
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Browserless error: ${response.status}`);
+      const errText = await response.text();
+      throw new Error(`Browserless error: ${response.status} - ${errText}`);
     }
 
-    const pdf = await response.arrayBuffer();
+    const screenshot = await response.arrayBuffer();
+    const base64 = Buffer.from(screenshot).toString('base64');
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=camera-plot.pdf');
-    return res.send(Buffer.from(pdf));
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({ image: base64, width: width || 1920, height: height || 1080 });
 
   } catch (error) {
-    console.error('PDF generation error:', error);
+    console.error('Screenshot generation error:', error);
     return res.status(500).json({ error: error.message });
   }
 };
