@@ -30,6 +30,8 @@ module.exports = async function handler(req, res) {
             printBackground: true,
             width: width || 1400,
             height: height || 900,
+            scale: 2,
+            pageRanges: '1',
           }
         })
       }
