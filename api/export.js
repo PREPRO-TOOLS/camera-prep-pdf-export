@@ -1,5 +1,8 @@
 const sharp = require('sharp');
 
+const BROWSERLESS_SCREENSHOT_URL =
+  'https://production-sfo.browserless.io/screenshot?token=2ULh6TR70PG4MZBd9ff4f234e5c9be89e01bb5d3751963082';
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', 'https://camera-prep-go.base44.app');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -34,22 +37,19 @@ module.exports = async function handler(req, res) {
 
     const jpegQuality = quality === 'print' ? 95 : quality === 'email' ? 60 : 80;
 
-    const response = await fetch(
-      'https://production-sfo.browserless.io/screenshot?token=PASTE_YOUR_TOKEN_HERE',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          html,
-          options: { type: 'png', fullPage: true },
-          viewport: {
-            width: viewportWidth,
-            height: viewportHeight,
-            deviceScaleFactor,
-          },
-        }),
-      }
-    );
+    const response = await fetch(BROWSERLESS_SCREENSHOT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        html,
+        options: { type: 'png', fullPage: true },
+        viewport: {
+          width: viewportWidth,
+          height: viewportHeight,
+          deviceScaleFactor,
+        },
+      }),
+    });
 
     if (!response.ok) {
       const errText = await response.text();
