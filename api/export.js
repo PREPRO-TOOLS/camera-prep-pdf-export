@@ -14,34 +14,40 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { html, width, height, quality } = req.body;
+    const { html, width, height, quality, deviceScaleFactor: bodyDsf } = req.body;
 
     if (!html) {
       return res.status(400).json({ error: 'No HTML provided' });
     }
 
-    const deviceScaleFactor = quality === 'print' ? 2 : quality === 'email' ? 1 : 1.5;
-    const viewportWidth = quality === 'email' ? 1280 : 1920;
-    const viewportHeight = quality === 'email' ? 720 : 1080;
+    const fallbackW = quality === 'email' ? 1280 : 1920;
+    const fallbackH = quality === 'email' ? 720 : 1080;
+    const viewportWidth = typeof width === 'number' && width > 0 ? width : fallbackW;
+    const viewportHeight = typeof height === 'number' && height > 0 ? height : fallbackH;
+
+    let deviceScaleFactor;
+    if (typeof bodyDsf === 'number' && bodyDsf > 0) {
+      deviceScaleFactor = bodyDsf;
+    } else {
+      deviceScaleFactor = quality === 'print' ? 2 : quality === 'email' ? 1 : 1.5;
+    }
+
     const jpegQuality = quality === 'print' ? 95 : quality === 'email' ? 60 : 80;
 
     const response = await fetch(
-      `https://production-sfo.browserless.io/screenshot?token=2ULh6TR70PG4MZBd9ff4f234e5c9be89e01bb5d3751963082`,
+      'https://production-sfo.browserless.io/screenshot?token=PASTE_YOUR_TOKEN_HERE',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          html: html,
-          options: {
-            type: 'png',
-            fullPage: true,
-          },
+          html,
+          options: { type: 'png', fullPage: true },
           viewport: {
             width: viewportWidth,
             height: viewportHeight,
-            deviceScaleFactor: deviceScaleFactor,
-          }
-        })
+            deviceScaleFactor,
+          },
+        }),
       }
     );
 
@@ -51,21 +57,18 @@ module.exports = async function handler(req, res) {
     }
 
     const screenshot = await response.arrayBuffer();
-    
     const compressed = await sharp(Buffer.from(screenshot))
       .jpeg({ quality: jpegQuality })
       .toBuffer();
-
     const base64 = compressed.toString('base64');
 
     res.setHeader('Content-Type', 'application/json');
-    return res.json({ 
-      image: base64, 
-      width: viewportWidth, 
+    return res.json({
+      image: base64,
+      width: viewportWidth,
       height: viewportHeight,
-      format: 'jpeg'
+      format: 'jpeg',
     });
-
   } catch (error) {
     console.error('Screenshot generation error:', error);
     return res.status(500).json({ error: error.message });
